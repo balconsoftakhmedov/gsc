@@ -65,19 +65,36 @@
             <tbody class="bg-white divide-y divide-gray-200">
                 @php
                     $renderDelta = function($current, $previous, $field) {
-                        if ($previous == 0) return $current > 0 ? '<span class="text-green-600 text-[10px] block">+100%</span>' : null;
+                        // Format the previous value based on the field type
+                        $formattedPrev = $previous;
+                        if ($field === 'mean_ctr' || $field === 'avg_ctr') {
+                            $formattedPrev = number_format($previous * 100, 2) . '%';
+                        } elseif ($field === 'mean_position' || $field === 'avg_position') {
+                            $formattedPrev = number_format($previous, 1);
+                        } else {
+                            $formattedPrev = number_format($previous);
+                        }
+
+                        if ($previous == 0) {
+                            if ($current > 0) {
+                                return '<div class="text-[10px] leading-tight mt-1 text-gray-400">prev: 0 <span class="text-green-600">(+100%)</span></div>';
+                            }
+                            return null;
+                        }
 
                         $diff = (($current - $previous) / $previous) * 100;
-                        if ($diff == 0) return null;
-
                         $color = $diff > 0 ? 'text-green-600' : 'text-red-600';
                         $sign = $diff > 0 ? '+' : '';
                         
-                        if ($field === 'mean_position') {
+                        if ($field === 'mean_position' || $field === 'avg_position') {
                             $color = $diff < 0 ? 'text-green-600' : 'text-red-600';
                         }
 
-                        return '<span class="'.$color.' text-[10px] block">'.$sign.round($diff).'%</span>';
+                        $percentHtml = $diff != 0 
+                            ? '<span class="'.$color.'">('.$sign.round($diff).'%)</span>' 
+                            : '<span class="text-gray-400">(0%)</span>';
+
+                        return '<div class="text-[10px] leading-tight mt-1 text-gray-400">prev: ' . $formattedPrev . ' ' . $percentHtml . '</div>';
                     };
                 @endphp
                 @forelse($keywords as $keyword)

@@ -38,6 +38,10 @@ Route::middleware(['auth'])->group(function () {
         return view('pages.changes', ['domain' => $domain]);
     })->name('changes.index');
 
+    Route::get('domains/{domain}/trends', function (Domain $domain) {
+        return view('pages.trends', ['domain' => $domain]);
+    })->name('trends.index');
+
     Route::get('actions', function () {
         return view('pages.actions');
     })->name('actions.index');
