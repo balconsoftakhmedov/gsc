@@ -1,11 +1,11 @@
 <div class="space-y-10" x-data="{ tooltip: '', x: 0, y: 0 }">
-    <!-- Custom Tooltip Element -->
+    <!-- Floating Info Modal -->
     <div x-show="tooltip" 
          x-transition:enter="transition ease-out duration-200"
          x-transition:enter-start="opacity-0 scale-95"
          x-transition:enter-end="opacity-100 scale-100"
-         class="fixed z-50 px-3 py-2 text-xs font-medium text-white bg-gray-900 rounded-lg shadow-lg max-w-sm break-all pointer-events-none"
-         :style="`left: ${x + 10}px; top: ${y + 10}px;`"
+         class="fixed z-[100] px-3 py-2 text-xs font-bold text-indigo-700 bg-white border-2 border-indigo-500 rounded-lg shadow-2xl max-w-xs break-all pointer-events-none"
+         :style="`left: ${x + 15}px; top: ${y + 15}px;`"
          x-text="tooltip"
          style="display: none;">
     </div>
@@ -37,13 +37,13 @@
                         <h3 class="font-bold text-green-800">Top Keyword Gainers</h3>
                         <span class="text-xs text-green-600">Page {{ $kwPage }}</span>
                     </div>
-                    <div class="overflow-x-auto">
-                        <table class="min-w-full divide-y divide-gray-200">
+                    <div class="w-full overflow-hidden">
+                        <table class="w-full divide-y divide-gray-200 table-fixed">
                             <thead class="bg-gray-50">
                                 <tr>
-                                    <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Query</th>
-                                    <th class="px-4 py-2 text-right text-xs font-medium text-gray-500 uppercase whitespace-nowrap">Gained Imps</th>
-                                    <th class="px-4 py-2 text-right text-xs font-medium text-gray-500 uppercase">Pos</th>
+                                    <th scope="col" class="w-1/2 px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Query</th>
+                                    <th scope="col" class="w-1/4 px-4 py-2 text-right text-xs font-medium text-gray-500 uppercase whitespace-nowrap">Gain</th>
+                                    <th scope="col" class="w-1/4 px-4 py-2 text-right text-xs font-medium text-gray-500 uppercase">Pos</th>
                                 </tr>
                             </thead>
                             <tbody class="divide-y divide-gray-200">
@@ -51,25 +51,22 @@
                                     @php $q = $queries->get($gainer['query_id']); @endphp
                                     @if($q)
                                     <tr class="hover:bg-gray-50">
-                                        <td class="px-4 py-3 text-sm max-w-[120px]">
-                                            <div class="truncate font-medium text-indigo-600"
-                                                 @mouseenter="tooltip = '{{ addslashes($q->query) }}'; x = $event.clientX; y = $event.clientY"
-                                                 @mousemove="x = $event.clientX; y = $event.clientY"
-                                                 @mouseleave="tooltip = ''">
-                                                <a href="{{ route('keywords.show', $q) }}" wire:navigate class="hover:underline">
-                                                    {{ $q->query }}
-                                                </a>
+                                        <td class="px-4 py-3 text-sm overflow-hidden">
+                                            <div class="flex items-center space-x-1 overflow-hidden">
+                                                <div class="w-32 lg:w-48 truncate font-medium text-indigo-600 block overflow-hidden whitespace-nowrap" 
+                                                     @mouseleave="tooltip = ''" 
+                                                     @mousemove="x = $event.clientX; y = $event.clientY" 
+                                                     @mouseenter="tooltip = '{{ addslashes($q->query) }}'; x = $event.clientX; y = $event.clientY" 
+                                                     style="overflow: hidden; width: 250px;">
+                                                    <a href="{{ route('keywords.show', $q) }}" wire:navigate class="hover:underline">{{ $q->query }}</a>
+                                                </div>
+                                                @if($gainer['is_new']) <span class="flex-shrink-0 text-[8px] font-bold text-blue-500 uppercase">New</span> @endif
                                             </div>
-                                            @if($gainer['is_new']) <span class="text-[8px] font-bold text-blue-500 uppercase">New</span> @endif
                                         </td>
-                                        <td class="px-4 py-3 text-right text-sm">
-                                            <span class="text-green-600 font-bold">+{{ number_format($gainer['imp_gain']) }}</span>
-                                        </td>
+                                        <td class="px-4 py-3 text-right text-sm font-bold text-green-600">+{{ number_format($gainer['imp_gain']) }}</td>
                                         <td class="px-4 py-3 text-right text-sm text-gray-500">
                                             {{ number_format($gainer['position'], 1) }}
-                                            @if($gainer['pos_change'] > 0)
-                                                <span class="text-green-600 text-[10px] block">↑{{ number_format($gainer['pos_change'], 1) }}</span>
-                                            @endif
+                                            @if($gainer['pos_change'] > 0) <span class="text-green-600 text-[10px] block font-bold">↑{{ number_format($gainer['pos_change'], 1) }}</span> @endif
                                         </td>
                                     </tr>
                                     @endif
@@ -89,13 +86,13 @@
                         <h3 class="font-bold text-red-800">Top Keyword Losers</h3>
                         <span class="text-xs text-red-600">Page {{ $klPage }}</span>
                     </div>
-                    <div class="overflow-x-auto">
-                        <table class="min-w-full divide-y divide-gray-200">
+                    <div class="w-full overflow-hidden">
+                        <table class="w-full divide-y divide-gray-200 table-fixed">
                             <thead class="bg-gray-50">
                                 <tr>
-                                    <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Query</th>
-                                    <th class="px-4 py-2 text-right text-xs font-medium text-gray-500 uppercase whitespace-nowrap">Lost Imps</th>
-                                    <th class="px-4 py-2 text-right text-xs font-medium text-gray-500 uppercase">Pos</th>
+                                    <th scope="col" class="w-1/2 px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Query</th>
+                                    <th scope="col" class="w-1/4 px-4 py-2 text-right text-xs font-medium text-gray-500 uppercase whitespace-nowrap">Loss</th>
+                                    <th scope="col" class="w-1/4 px-4 py-2 text-right text-xs font-medium text-gray-500 uppercase">Pos</th>
                                 </tr>
                             </thead>
                             <tbody class="divide-y divide-gray-200">
@@ -103,24 +100,19 @@
                                     @php $q = $queries->get($loser['query_id']); @endphp
                                     @if($q)
                                     <tr class="hover:bg-gray-50">
-                                        <td class="px-4 py-3 text-sm max-w-[120px]">
-                                            <div class="truncate font-medium text-gray-700"
-                                                 @mouseenter="tooltip = '{{ addslashes($q->query) }}'; x = $event.clientX; y = $event.clientY"
-                                                 @mousemove="x = $event.clientX; y = $event.clientY"
-                                                 @mouseleave="tooltip = ''">
-                                                <a href="{{ route('keywords.show', $q) }}" wire:navigate class="hover:underline">
-                                                    {{ $q->query }}
-                                                </a>
+                                        <td class="px-4 py-3 text-sm overflow-hidden">
+                                            <div class="w-32 lg:w-48 truncate font-medium text-gray-700 block overflow-hidden whitespace-nowrap" 
+                                                 @mouseleave="tooltip = ''" 
+                                                 @mousemove="x = $event.clientX; y = $event.clientY" 
+                                                 @mouseenter="tooltip = '{{ addslashes($q->query) }}'; x = $event.clientX; y = $event.clientY" 
+                                                 style="overflow: hidden; width: 250px;">
+                                                <a href="{{ route('keywords.show', $q) }}" wire:navigate class="hover:underline">{{ $q->query }}</a>
                                             </div>
                                         </td>
-                                        <td class="px-4 py-3 text-right text-sm">
-                                            <span class="text-red-600 font-bold">{{ number_format($loser['imp_gain']) }}</span>
-                                        </td>
+                                        <td class="px-4 py-3 text-right text-sm font-bold text-red-600">{{ number_format($loser['imp_gain']) }}</td>
                                         <td class="px-4 py-3 text-right text-sm text-gray-500">
                                             {{ number_format($loser['position'], 1) }}
-                                            @if($loser['pos_change'] < 0)
-                                                <span class="text-red-600 text-[10px] block">↓{{ number_format(abs($loser['pos_change']), 1) }}</span>
-                                            @endif
+                                            @if($loser['pos_change'] < 0) <span class="text-red-600 text-[10px] block font-bold">↓{{ number_format(abs($loser['pos_change']), 1) }}</span> @endif
                                         </td>
                                     </tr>
                                     @endif
@@ -145,13 +137,13 @@
                         <h3 class="font-bold text-blue-800">Top Page Gainers</h3>
                         <span class="text-xs text-blue-600">Page {{ $pwPage }}</span>
                     </div>
-                    <div class="overflow-x-auto">
-                        <table class="min-w-full divide-y divide-gray-200">
+                    <div class="w-full overflow-hidden">
+                        <table class="w-full divide-y divide-gray-200 table-fixed">
                             <thead class="bg-gray-50">
                                 <tr>
-                                    <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Path</th>
-                                    <th class="px-4 py-2 text-right text-xs font-medium text-gray-500 uppercase whitespace-nowrap">Gained Imps</th>
-                                    <th class="px-4 py-2 text-right text-xs font-medium text-gray-500 uppercase">Pos</th>
+                                    <th scope="col" class="w-1/2 px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Path</th>
+                                    <th scope="col" class="w-1/4 px-4 py-2 text-right text-xs font-medium text-gray-500 uppercase whitespace-nowrap">Gain</th>
+                                    <th scope="col" class="w-1/4 px-4 py-2 text-right text-xs font-medium text-gray-500 uppercase">Pos</th>
                                 </tr>
                             </thead>
                             <tbody class="divide-y divide-gray-200">
@@ -159,24 +151,19 @@
                                     @php $p = $pages->get($gainer['page_id']); @endphp
                                     @if($p)
                                     <tr class="hover:bg-gray-50">
-                                        <td class="px-4 py-3 text-sm max-w-[120px]">
-                                            <div class="truncate font-medium text-indigo-600"
-                                                 @mouseenter="tooltip = '{{ addslashes($p->url) }}'; x = $event.clientX; y = $event.clientY"
-                                                 @mousemove="x = $event.clientX; y = $event.clientY"
-                                                 @mouseleave="tooltip = ''">
-                                                <a href="{{ route('pages.show', $p) }}" wire:navigate class="hover:underline">
-                                                    {{ $p->path }}
-                                                </a>
+                                        <td class="px-4 py-3 text-sm overflow-hidden">
+                                            <div class="w-32 lg:w-48 truncate font-medium text-indigo-600 block overflow-hidden whitespace-nowrap" 
+                                                 @mouseleave="tooltip = ''" 
+                                                 @mousemove="x = $event.clientX; y = $event.clientY" 
+                                                 @mouseenter="tooltip = '{{ addslashes($p->url) }}'; x = $event.clientX; y = $event.clientY" 
+                                                 style="overflow: hidden; width: 250px;">
+                                                <a href="{{ route('pages.show', $p) }}" wire:navigate class="hover:underline">{{ $p->path }}</a>
                                             </div>
                                         </td>
-                                        <td class="px-4 py-3 text-right text-sm">
-                                            <span class="text-green-600 font-bold">+{{ number_format($gainer['imp_gain']) }}</span>
-                                        </td>
+                                        <td class="px-4 py-3 text-right text-sm font-bold text-green-600">+{{ number_format($gainer['imp_gain']) }}</td>
                                         <td class="px-4 py-3 text-right text-sm text-gray-500">
                                             {{ number_format($gainer['position'], 1) }}
-                                            @if($gainer['pos_change'] > 0)
-                                                <span class="text-green-600 text-[10px] block">↑{{ number_format($gainer['pos_change'], 1) }}</span>
-                                            @endif
+                                            @if($gainer['pos_change'] > 0) <span class="text-green-600 text-[10px] block font-bold">↑{{ number_format($gainer['pos_change'], 1) }}</span> @endif
                                         </td>
                                     </tr>
                                     @endif
@@ -196,13 +183,13 @@
                         <h3 class="font-bold text-gray-800">Top Page Losers</h3>
                         <span class="text-xs text-gray-600">Page {{ $plPage }}</span>
                     </div>
-                    <div class="overflow-x-auto">
-                        <table class="min-w-full divide-y divide-gray-200">
+                    <div class="w-full overflow-hidden">
+                        <table class="w-full divide-y divide-gray-200 table-fixed">
                             <thead class="bg-gray-50">
                                 <tr>
-                                    <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Path</th>
-                                    <th class="px-4 py-2 text-right text-xs font-medium text-gray-500 uppercase whitespace-nowrap">Lost Imps</th>
-                                    <th class="px-4 py-2 text-right text-xs font-medium text-gray-500 uppercase">Pos</th>
+                                    <th scope="col" class="w-1/2 px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Path</th>
+                                    <th scope="col" class="w-1/4 px-4 py-2 text-right text-xs font-medium text-gray-500 uppercase whitespace-nowrap">Loss</th>
+                                    <th scope="col" class="w-1/4 px-4 py-2 text-right text-xs font-medium text-gray-500 uppercase">Pos</th>
                                 </tr>
                             </thead>
                             <tbody class="divide-y divide-gray-200">
@@ -210,24 +197,19 @@
                                     @php $p = $pages->get($loser['page_id']); @endphp
                                     @if($p)
                                     <tr class="hover:bg-gray-50">
-                                        <td class="px-4 py-3 text-sm max-w-[120px]">
-                                            <div class="truncate font-medium text-gray-700"
-                                                 @mouseenter="tooltip = '{{ addslashes($p->url) }}'; x = $event.clientX; y = $event.clientY"
-                                                 @mousemove="x = $event.clientX; y = $event.clientY"
-                                                 @mouseleave="tooltip = ''">
-                                                <a href="{{ route('pages.show', $p) }}" wire:navigate class="hover:underline">
-                                                    {{ $p->path }}
-                                                </a>
+                                        <td class="px-4 py-3 text-sm overflow-hidden">
+                                            <div class="w-32 lg:w-48 truncate font-medium text-gray-700 block overflow-hidden whitespace-nowrap" 
+                                                 @mouseleave="tooltip = ''" 
+                                                 @mousemove="x = $event.clientX; y = $event.clientY" 
+                                                 @mouseenter="tooltip = '{{ addslashes($p->url) }}'; x = $event.clientX; y = $event.clientY" 
+                                                 style="overflow: hidden; width: 250px;">
+                                                <a href="{{ route('pages.show', $p) }}" wire:navigate class="hover:underline">{{ $p->path }}</a>
                                             </div>
                                         </td>
-                                        <td class="px-4 py-3 text-right text-sm">
-                                            <span class="text-red-600 font-bold">{{ number_format($loser['imp_gain']) }}</span>
-                                        </td>
+                                        <td class="px-4 py-3 text-right text-sm font-bold text-red-600">{{ number_format($loser['imp_gain']) }}</td>
                                         <td class="px-4 py-3 text-right text-sm text-gray-500">
                                             {{ number_format($loser['position'], 1) }}
-                                            @if($loser['pos_change'] < 0)
-                                                <span class="text-red-600 text-[10px] block">↓{{ number_format(abs($loser['pos_change']), 1) }}</span>
-                                            @endif
+                                            @if($loser['pos_change'] < 0) <span class="text-red-600 text-[10px] block font-bold">↓{{ number_format(abs($loser['pos_change']), 1) }}</span> @endif
                                         </td>
                                     </tr>
                                     @endif
