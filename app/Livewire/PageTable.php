@@ -20,11 +20,26 @@ class PageTable extends Component
     public $minImpressions = '';
     public $minClicks = '';
 
+    public $sortField = 'sum_clicks';
+    public $sortDirection = 'desc';
+
     protected $queryString = [
         'searchPage' => ['except' => ''],
         'minImpressions' => ['except' => ''],
         'minClicks' => ['except' => ''],
+        'sortField' => ['except' => 'sum_clicks'],
+        'sortDirection' => ['except' => 'desc'],
     ];
+
+    public function sortBy($field)
+    {
+        if ($this->sortField === $field) {
+            $this->sortDirection = $this->sortDirection === 'asc' ? 'desc' : 'asc';
+        } else {
+            $this->sortField = $field;
+            $this->sortDirection = 'desc';
+        }
+    }
 
     public function mount(Domain $domain)
     {
@@ -33,7 +48,7 @@ class PageTable extends Component
 
     public function resetFilters()
     {
-        $this->reset('searchPage', 'minImpressions', 'minClicks');
+        $this->reset('searchPage', 'minImpressions', 'minClicks', 'sortField', 'sortDirection');
     }
 
     public function render()
@@ -41,7 +56,7 @@ class PageTable extends Component
         $startDate = Carbon::now()->subDays($this->lookbackDays)->format('Y-m-d');
 
         $pageIdsQuery = DailyPageSummary::where('domain_id', $this->domain->id)
-            ->where('stat_date', '>=', $startDate)
+            ->whereDate('stat_date', '>=', $startDate)
             ->selectRaw('
                 page_id,
                 SUM(total_clicks) as sum_clicks,
@@ -59,13 +74,19 @@ class PageTable extends Component
             $pageIdsQuery->having('sum_clicks', '>=', (int) $this->minClicks);
         }
 
-        $aggregatedData = collect($pageIdsQuery->get())->keyBy('page_id');
+        $aggregatedData = collect($pageIdsQuery->orderBy($this->sortField, $this->sortDirection)->get())->keyBy('page_id');
 
         $q = Page::where('domain_id', $this->domain->id)
             ->whereIn('id', $aggregatedData->keys());
 
         if ($this->searchPage) {
             $q->where('url', 'like', '%' . $this->searchPage . '%');
+        }
+
+        // Maintain the order from the aggregated data
+        $ids = $aggregatedData->keys()->toArray();
+        if (!empty($ids)) {
+            $q->orderByRaw('CASE id ' . implode(' ', array_map(fn($id, $i) => "WHEN {$id} THEN {$i}", $ids, array_keys($ids))) . ' END');
         }
 
         $pages = $q->paginate(50);
