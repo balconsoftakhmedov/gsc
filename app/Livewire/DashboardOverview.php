@@ -34,8 +34,16 @@ class DashboardOverview extends Component
         $dates = $summaries->pluck('stat_date')->map(fn($d) => $d->format('M d'))->toArray();
         $clicks = $summaries->pluck('total_clicks')->toArray();
         $impressions = $summaries->pluck('total_impressions')->toArray();
-        $ctrs = $summaries->pluck('avg_ctr')->toArray();
-        $positions = $summaries->pluck('avg_position')->toArray();
+        $ctrs = $summaries->pluck('avg_ctr')->map(fn($v) => (float)$v)->toArray();
+        $positions = $summaries->pluck('avg_position')->map(fn($v) => (float)$v)->toArray();
+
+        $this->dispatch('charts-updated', chartData: [
+            'dates' => $dates,
+            'clicks' => $clicks,
+            'impressions' => $impressions,
+            'ctrs' => $ctrs,
+            'positions' => $positions,
+        ]);
 
         return view('livewire.dashboard-overview', [
             'domains' => $domains,

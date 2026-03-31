@@ -35,8 +35,8 @@ class OpportunitiesTable extends Component
                 AVG(avg_position) as mean_position
             ')
             ->groupBy('query_id')
-            ->having('sum_impressions', '>', 50)
-            ->having('mean_position', '>', 5)
+            ->having('sum_impressions', '>', 10)
+            ->having('mean_position', '>', 3)
             ->orderBy('sum_impressions', 'desc');
 
         $aggregatedData = collect($queryIdsQuery->get())->keyBy('query_id');

@@ -67,11 +67,11 @@
         <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mt-6">
             <div class="bg-white p-6 shadow-sm sm:rounded-lg">
                 <h3 class="text-lg font-semibold mb-4 text-gray-800">Clicks & Impressions Trend</h3>
-                <div id="chart-clicks-impressions" class="h-64" wire:ignore></div>
+                <div id="chart-clicks-impressions" class="h-64" wire:ignore wire:key="chart-clicks-impressions-{{ $selectedDomainId }}-{{ $lookbackDays }}"></div>
             </div>
             <div class="bg-white p-6 shadow-sm sm:rounded-lg">
                 <h3 class="text-lg font-semibold mb-4 text-gray-800">CTR & Position Trend</h3>
-                <div id="chart-ctr-position" class="h-64" wire:ignore></div>
+                <div id="chart-ctr-position" class="h-64" wire:ignore wire:key="chart-ctr-position-{{ $selectedDomainId }}-{{ $lookbackDays }}"></div>
             </div>
         </div>
 
@@ -94,47 +94,66 @@
 
     <script src="https://cdn.jsdelivr.net/npm/apexcharts"></script>
     <script>
-        document.addEventListener('livewire:initialized', () => {
-            const chartData = @json($chartData);
+        (function() {
+            let clicksChart = null;
+            let ctrChart = null;
 
-            if (chartData.dates.length > 0) {
-                // Clicks & Impressions
-                const clicksImpressionsOptions = {
+            function initCharts(data) {
+                if (!data || !data.dates || data.dates.length === 0) return;
+
+                const clicksEl = document.querySelector("#chart-clicks-impressions");
+                const ctrEl = document.querySelector("#chart-ctr-position");
+
+                if (!clicksEl || !ctrEl) return;
+
+                if (clicksChart) clicksChart.destroy();
+                if (ctrChart) ctrChart.destroy();
+
+                clicksChart = new ApexCharts(clicksEl, {
                     series: [{
                         name: 'Clicks',
                         type: 'line',
-                        data: chartData.clicks
+                        data: data.clicks
                     }, {
                         name: 'Impressions',
                         type: 'area',
-                        data: chartData.impressions
+                        data: data.impressions
                     }],
-                    chart: { height: 280, type: 'line', toolbar: { show: false } },
+                    chart: { height: 280, type: 'line', toolbar: { show: false }, animations: { enabled: false } },
                     stroke: { width: [3, 0], curve: 'smooth' },
-                    xaxis: { categories: chartData.dates },
+                    xaxis: { categories: data.dates },
                     colors: ['#3b82f6', '#c084fc'],
                     yaxis: [
                         { title: { text: 'Clicks' } },
                         { opposite: true, title: { text: 'Impressions' } }
                     ]
-                };
-                new ApexCharts(document.querySelector("#chart-clicks-impressions"), clicksImpressionsOptions).render();
+                });
+                clicksChart.render();
 
-                // CTR & Position
-                const ctrPositionOptions = {
+                ctrChart = new ApexCharts(ctrEl, {
                     series: [{
                         name: 'Position (Lower is Better)',
                         type: 'line',
-                        data: chartData.positions
+                        data: data.positions
                     }],
-                    chart: { height: 280, type: 'line', toolbar: { show: false } },
+                    chart: { height: 280, type: 'line', toolbar: { show: false }, animations: { enabled: false } },
                     stroke: { width: 3, curve: 'smooth' },
-                    xaxis: { categories: chartData.dates },
+                    xaxis: { categories: data.dates },
                     colors: ['#10b981'],
                     yaxis: { reversed: true, title: { text: 'Position' } }
-                };
-                new ApexCharts(document.querySelector("#chart-ctr-position"), ctrPositionOptions).render();
+                });
+                ctrChart.render();
             }
-        });
+
+            document.addEventListener('livewire:initialized', () => {
+                @if($latestSummary)
+                    initCharts(@json($chartData));
+                @endif
+
+                Livewire.on('charts-updated', (event) => {
+                    initCharts(event.chartData);
+                });
+            });
+        })();
     </script>
 </div>
