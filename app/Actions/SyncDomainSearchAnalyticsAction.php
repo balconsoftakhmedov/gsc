@@ -19,7 +19,8 @@ class SyncDomainSearchAnalyticsAction
         protected GoogleSearchConsoleService $gscService,
         protected RebuildDailyDomainSummaryAction $domainSummaryAction,
         protected RebuildDailyQuerySummaryAction $querySummaryAction,
-        protected RebuildDailyPageSummaryAction $pageSummaryAction
+        protected RebuildDailyPageSummaryAction $pageSummaryAction,
+        protected RebuildDailyCountrySummaryAction $countrySummaryAction
     ) {}
 
     public function execute(Domain $domain, string $date)
@@ -51,6 +52,7 @@ class SyncDomainSearchAnalyticsAction
                 $keys = $row->getKeys();
                 $queryStr = $keys[0];
                 $pageStr = $keys[1];
+                $countryStr = $keys[2] ?? 'unknown';
 
                 $clicks = $row->getClicks();
                 $impressions = $row->getImpressions();
@@ -109,12 +111,13 @@ class SyncDomainSearchAnalyticsAction
                 }
                 $pageModel->save();
 
-                // 6. Upsert daily search analytics
+                // 6. Upsert daily search analytics (now includes country)
                 $analytic = DailySearchAnalytic::updateOrCreate(
                     [
                         'domain_id' => $domain->id,
                         'query_id' => $queryModel->id,
                         'page_id' => $pageModel->id,
+                        'country' => $countryStr,
                         'stat_date' => $date,
                     ],
                     [
@@ -138,6 +141,7 @@ class SyncDomainSearchAnalyticsAction
             $this->domainSummaryAction->execute($domain, $date);
             $this->querySummaryAction->execute($domain, $date);
             $this->pageSummaryAction->execute($domain, $date);
+            $this->countrySummaryAction->execute($domain, $date);
 
             $syncRun->update([
                 'status' => 'completed',

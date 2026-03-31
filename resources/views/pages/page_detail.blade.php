@@ -36,6 +36,42 @@
             </div>
 
             <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg p-6">
+                <h3 class="text-lg font-semibold mb-4 text-gray-800">Top Countries for this Page</h3>
+                @php
+                    $countries = \App\Models\DailySearchAnalytic::where('page_id', $page->id)
+                        ->selectRaw('country, SUM(clicks) as total_clicks, SUM(impressions) as total_impressions, AVG(position) as avg_position')
+                        ->groupBy('country')
+                        ->orderBy('total_impressions', 'desc')
+                        ->get();
+                @endphp
+
+                <div class="overflow-x-auto border rounded-lg">
+                    <table class="min-w-full divide-y divide-gray-200">
+                        <thead class="bg-gray-50">
+                            <tr>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Country</th>
+                                <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Clicks</th>
+                                <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Impressions</th>
+                                <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Avg Pos</th>
+                            </tr>
+                        </thead>
+                        <tbody class="bg-white divide-y divide-gray-200">
+                            @forelse($countries as $row)
+                                <tr>
+                                    <td class="px-6 py-4 text-sm font-bold text-gray-900 uppercase">{{ $row->country }}</td>
+                                    <td class="px-6 py-4 text-sm text-right">{{ number_format($row->total_clicks) }}</td>
+                                    <td class="px-6 py-4 text-sm text-right">{{ number_format($row->total_impressions) }}</td>
+                                    <td class="px-6 py-4 text-sm text-right font-bold text-indigo-600">{{ number_format($row->avg_position, 1) }}</td>
+                                </tr>
+                            @empty
+                                <tr><td colspan="4" class="px-6 py-4 text-center text-gray-500">No country data available.</td></tr>
+                            @endforelse
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg p-6">
                 <h3 class="text-lg font-semibold mb-4 text-gray-800">Top Keywords for this Page</h3>
                 @php
                     $keywords = \App\Models\DailySearchAnalytic::with('seoQuery')

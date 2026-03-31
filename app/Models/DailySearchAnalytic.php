@@ -8,7 +8,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 class DailySearchAnalytic extends Model
 {
     protected $fillable = [
-        'domain_id', 'query_id', 'page_id', 'stat_date',
+        'domain_id', 'query_id', 'page_id', 'country', 'stat_date',
         'clicks', 'impressions', 'ctr', 'position'
     ];
 
@@ -18,6 +18,7 @@ class DailySearchAnalytic extends Model
         'impressions' => 'integer',
         'ctr' => 'decimal:4',
         'position' => 'decimal:4',
+        'country' => 'string',
     ];
 
     public function domain(): BelongsTo

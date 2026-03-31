@@ -34,8 +34,7 @@ class GoogleSearchConsoleService
         $request = new SearchAnalyticsQueryRequest();
         $request->setStartDate($date);
         $request->setEndDate($date);
-        $request->setDimensions(['query', 'page']);
-        $request->setRowLimit(25000); // Max allowed by API per request
+        $request->setDimensions(['query', 'page', 'country']);        $request->setRowLimit(25000); // Max allowed by API per request
 
         $startRow = 0;
         $allRows = [];
