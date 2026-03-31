@@ -12,7 +12,7 @@ class RebuildDailyDomainSummaryAction
     public function execute(Domain $domain, string $date)
     {
         $stats = DailySearchAnalytic::where('domain_id', $domain->id)
-            ->where('stat_date', $date)
+            ->whereDate('stat_date', $date)
             ->selectRaw('
                 SUM(clicks) as total_clicks,
                 SUM(impressions) as total_impressions,
@@ -23,11 +23,11 @@ class RebuildDailyDomainSummaryAction
 
         // Calculate average CTR and position safely (weighted by impressions)
         $avgStats = DailySearchAnalytic::where('domain_id', $domain->id)
-            ->where('stat_date', $date)
+            ->whereDate('stat_date', $date)
             ->where('impressions', '>', 0)
             ->selectRaw('
-                SUM(clicks) / SUM(impressions) as avg_ctr,
-                SUM(position * impressions) / SUM(impressions) as avg_position
+                CAST(SUM(clicks) AS FLOAT) / SUM(impressions) as avg_ctr,
+                CAST(SUM(position * impressions) AS FLOAT) / SUM(impressions) as avg_position
             ')
             ->first();
 

@@ -12,7 +12,7 @@ class RebuildDailyQuerySummaryAction
     public function execute(Domain $domain, string $date)
     {
         $stats = DailySearchAnalytic::where('domain_id', $domain->id)
-            ->where('stat_date', $date)
+            ->whereDate('stat_date', $date)
             ->selectRaw('
                 query_id,
                 SUM(clicks) as total_clicks,
@@ -23,12 +23,12 @@ class RebuildDailyQuerySummaryAction
             ->get();
 
         $avgStats = DailySearchAnalytic::where('domain_id', $domain->id)
-            ->where('stat_date', $date)
+            ->whereDate('stat_date', $date)
             ->where('impressions', '>', 0)
             ->selectRaw('
                 query_id,
-                SUM(clicks) / SUM(impressions) as avg_ctr,
-                SUM(position * impressions) / SUM(impressions) as avg_position
+                CAST(SUM(clicks) AS FLOAT) / SUM(impressions) as avg_ctr,
+                CAST(SUM(position * impressions) AS FLOAT) / SUM(impressions) as avg_position
             ')
             ->groupBy('query_id')
             ->get()->keyBy('query_id');

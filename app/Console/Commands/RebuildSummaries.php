@@ -11,34 +11,38 @@ use Illuminate\Console\Command;
 
 class RebuildSummaries extends Command
 {
-    protected $signature = 'seo:rebuild-summaries';
-    protected $description = 'Rebuilds all daily summaries based on the raw analytic data.';
+    protected $signature = 'seo:rebuild-summaries {--domain= : Domain ID to rebuild}';
+    protected $description = 'Rebuild all summary tables from existing analytics data';
 
     public function handle(
         RebuildDailyDomainSummaryAction $domainSummary,
         RebuildDailyQuerySummaryAction $querySummary,
         RebuildDailyPageSummaryAction $pageSummary
     ) {
-        $dates = DailySearchAnalytic::select('stat_date')->distinct()->pluck('stat_date');
-        $domains = Domain::where('is_active', true)->get();
-
-        $this->info("Rebuilding summaries for {$domains->count()} domains across {$dates->count()} unique dates.");
+        $domains = $this->option('domain') 
+            ? Domain::where('id', $this->option('domain'))->get()
+            : Domain::all();
 
         foreach ($domains as $domain) {
-            $this->info("Processing domain: {$domain->name}");
+            $this->info("Rebuilding summaries for domain: {$domain->name}");
+            
+            $dates = DailySearchAnalytic::where('domain_id', $domain->id)
+                ->distinct()
+                ->pluck('stat_date')
+                ->map(fn($d) => $d instanceof \Carbon\Carbon ? $d->format('Y-m-d') : substr($d, 0, 10));
+
+            $bar = $this->output->createProgressBar(count($dates));
+            $bar->start();
 
             foreach ($dates as $date) {
-                $dateStr = $date->format('Y-m-d');
-                $this->line("  -> Rebuilding summaries for: {$dateStr}");
-
-                try {
-                    $domainSummary->execute($domain, $dateStr);
-                    $querySummary->execute($domain, $dateStr);
-                    $pageSummary->execute($domain, $dateStr);
-                } catch (\Exception $e) {
-                    $this->error("  -> Failed rebuilding on {$dateStr}: " . $e->getMessage());
-                }
+                $domainSummary->execute($domain, $date);
+                $querySummary->execute($domain, $date);
+                $pageSummary->execute($domain, $date);
+                $bar->advance();
             }
+
+            $bar->finish();
+            $this->newLine();
         }
 
         $this->info('Summary rebuild completed.');

@@ -13,7 +13,7 @@ class DailySearchAnalytic extends Model
     ];
 
     protected $casts = [
-        'stat_date' => 'date',
+        'stat_date' => 'date:Y-m-d',
         'clicks' => 'integer',
         'impressions' => 'integer',
         'ctr' => 'decimal:4',

@@ -13,7 +13,7 @@ class DailyDomainSummary extends Model
     ];
 
     protected $casts = [
-        'stat_date' => 'date',
+        'stat_date' => 'date:Y-m-d',
         'total_clicks' => 'integer',
         'total_impressions' => 'integer',
         'avg_ctr' => 'decimal:4',
