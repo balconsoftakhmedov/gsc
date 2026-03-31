@@ -91,9 +91,27 @@ class KeywordTable extends Component
 
         $keywords = $q->paginate(50);
 
+        // Fetch comparison data (Latest Day with data vs the day before)
+        $latestDate = DailyQuerySummary::where('domain_id', $this->domain->id)
+            ->where('total_impressions', '>', 0)
+            ->max('stat_date');
+            
+        $yesterdayDate = $latestDate ? Carbon::parse($latestDate)->subDay()->format('Y-m-d') : null;
+
+        $comparisonData = [];
+        if ($latestDate && $yesterdayDate) {
+            $comparisonData = DailyQuerySummary::where('domain_id', $this->domain->id)
+                ->whereDate('stat_date', '>=', $yesterdayDate)
+                ->whereDate('stat_date', '<=', $latestDate)
+                ->get()
+                ->groupBy('query_id');
+        }
+
         return view('livewire.keyword-table', [
             'keywords' => $keywords,
             'aggregatedData' => $aggregatedData,
+            'comparisonData' => $comparisonData,
+            'latestDate' => $latestDate,
         ]);
     }
 }

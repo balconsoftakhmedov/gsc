@@ -62,6 +62,33 @@
                 </tr>
             </thead>
             <tbody class="bg-white divide-y divide-gray-200">
+                @php
+                    $renderDelta = function($keywordId, $field, $comparisonData, $latestDate) {
+                        $stats = $comparisonData->get($keywordId);
+                        if (!$stats || $stats->count() < 2) return null;
+
+                        // Ensure we compare strings or Carbon objects correctly
+                        $currentDateStr = $latestDate instanceof \Carbon\Carbon ? $latestDate->format('Y-m-d') : $latestDate;
+                        
+                        $current = $stats->first(fn($s) => $s->stat_date->format('Y-m-d') === $currentDateStr)?->$field ?? 0;
+                        $previous = $stats->first(fn($s) => $s->stat_date->format('Y-m-d') !== $currentDateStr)?->$field ?? 0;
+
+                        if ($previous == 0) return $current > 0 ? '<span class="text-green-600 text-[10px] block">+100%</span>' : null;
+
+                        $diff = (($current - $previous) / $previous) * 100;
+                        if ($diff == 0) return null;
+
+                        $color = $diff > 0 ? 'text-green-600' : 'text-red-600';
+                        $sign = $diff > 0 ? '+' : '';
+                        
+                        // For position, lower is better
+                        if ($field === 'avg_position') {
+                            $color = $diff < 0 ? 'text-green-600' : 'text-red-600';
+                        }
+
+                        return '<span class="'.$color.' text-[10px] block">'.$sign.round($diff).'%</span>';
+                    };
+                @endphp
                 @forelse($keywords as $keyword)
                     @php
                         $data = $aggregatedData->get($keyword->id);
@@ -78,15 +105,19 @@
                         </td>
                         <td class="px-6 py-4 whitespace-nowrap text-sm text-right font-medium">
                             {{ number_format($data->sum_clicks) }}
+                            {!! $renderDelta($keyword->id, 'total_clicks', $comparisonData, $latestDate) !!}
                         </td>
                         <td class="px-6 py-4 whitespace-nowrap text-sm text-right">
                             {{ number_format($data->sum_impressions) }}
+                            {!! $renderDelta($keyword->id, 'total_impressions', $comparisonData, $latestDate) !!}
                         </td>
                         <td class="px-6 py-4 whitespace-nowrap text-sm text-right">
                             {{ number_format($data->mean_ctr * 100, 2) }}%
+                            {!! $renderDelta($keyword->id, 'avg_ctr', $comparisonData, $latestDate) !!}
                         </td>
                         <td class="px-6 py-4 whitespace-nowrap text-sm text-right">
                             {{ number_format($data->mean_position, 1) }}
+                            {!! $renderDelta($keyword->id, 'avg_position', $comparisonData, $latestDate) !!}
                         </td>
                     </tr>
                     @endif
