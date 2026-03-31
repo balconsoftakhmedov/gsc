@@ -55,10 +55,10 @@
                     <tr class="hover:bg-gray-50">
                         <td class="px-6 py-4 text-sm text-gray-900 max-w-xs break-all">
                             <div class="font-medium text-indigo-600 mb-1">
-                                <a href="https://google.com/search?q={{ urlencode($row->query->query) }}" target="_blank" class="hover:underline">
-                                    {{ $row->query->query }}
+                                <a href="https://google.com/search?q={{ urlencode($row->seoQuery->query) }}" target="_blank" class="hover:underline">
+                                    {{ $row->seoQuery->query }}
                                 </a>
-                                @if($row->query->is_branded)
+                                @if($row->seoQuery->is_branded)
                                     <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-gray-100 text-gray-800 ml-2">Brand</span>
                                 @endif
                             </div>

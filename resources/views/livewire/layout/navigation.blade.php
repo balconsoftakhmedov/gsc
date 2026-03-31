@@ -33,6 +33,26 @@ new class extends Component
                     <x-nav-link :href="route('dashboard')" :active="request()->routeIs('dashboard')" wire:navigate>
                         {{ __('Dashboard') }}
                     </x-nav-link>
+
+                    @php
+                        $activeDomain = \App\Models\Domain::where('is_active', true)->first();
+                    @endphp
+
+                    @if($activeDomain)
+                        <x-nav-link :href="route('keywords.index', $activeDomain)" :active="request()->routeIs('keywords.*')" wire:navigate>
+                            {{ __('Keywords') }}
+                        </x-nav-link>
+                        <x-nav-link :href="route('pages.index', $activeDomain)" :active="request()->routeIs('pages.*')" wire:navigate>
+                            {{ __('Pages') }}
+                        </x-nav-link>
+                        <x-nav-link :href="route('opportunities.index', $activeDomain)" :active="request()->routeIs('opportunities.*')" wire:navigate>
+                            {{ __('Opportunities') }}
+                        </x-nav-link>
+                    @endif
+
+                    <x-nav-link :href="route('actions.index')" :active="request()->routeIs('actions.*')" wire:navigate>
+                        {{ __('Actions') }}
+                    </x-nav-link>
                 </div>
             </div>
 
@@ -83,6 +103,22 @@ new class extends Component
         <div class="pt-2 pb-3 space-y-1">
             <x-responsive-nav-link :href="route('dashboard')" :active="request()->routeIs('dashboard')" wire:navigate>
                 {{ __('Dashboard') }}
+            </x-responsive-nav-link>
+
+            @if($activeDomain)
+                <x-responsive-nav-link :href="route('keywords.index', $activeDomain)" :active="request()->routeIs('keywords.*')" wire:navigate>
+                    {{ __('Keywords') }}
+                </x-responsive-nav-link>
+                <x-responsive-nav-link :href="route('pages.index', $activeDomain)" :active="request()->routeIs('pages.*')" wire:navigate>
+                    {{ __('Pages') }}
+                </x-responsive-nav-link>
+                <x-responsive-nav-link :href="route('opportunities.index', $activeDomain)" :active="request()->routeIs('opportunities.*')" wire:navigate>
+                    {{ __('Opportunities') }}
+                </x-responsive-nav-link>
+            @endif
+
+            <x-responsive-nav-link :href="route('actions.index')" :active="request()->routeIs('actions.*')" wire:navigate>
+                {{ __('Actions') }}
             </x-responsive-nav-link>
         </div>
 

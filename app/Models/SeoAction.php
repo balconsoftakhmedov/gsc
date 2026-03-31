@@ -26,9 +26,9 @@ class SeoAction extends Model
         return $this->belongsTo(Page::class);
     }
 
-    public function query(): BelongsTo
+    public function seoQuery(): BelongsTo
     {
-        return $this->belongsTo(Query::class);
+        return $this->belongsTo(Query::class, 'query_id');
     }
 
     public function user(): BelongsTo

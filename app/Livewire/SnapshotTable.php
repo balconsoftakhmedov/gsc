@@ -44,12 +44,12 @@ class SnapshotTable extends Component
 
     public function render()
     {
-        $query = DailySearchAnalytic::with(['query', 'page'])
+        $query = DailySearchAnalytic::with(['seoQuery', 'page'])
             ->where('domain_id', $this->domain->id)
             ->where('stat_date', $this->date);
 
         if ($this->searchQuery) {
-            $query->whereHas('query', function($q) {
+            $query->whereHas('seoQuery', function($q) {
                 $q->where('query', 'like', '%' . $this->searchQuery . '%');
             });
         }

@@ -25,9 +25,9 @@ class DailySearchAnalytic extends Model
         return $this->belongsTo(Domain::class);
     }
 
-    public function query(): BelongsTo
+    public function seoQuery(): BelongsTo
     {
-        return $this->belongsTo(Query::class);
+        return $this->belongsTo(Query::class, 'query_id');
     }
 
     public function page(): BelongsTo
