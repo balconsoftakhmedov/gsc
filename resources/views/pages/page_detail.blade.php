@@ -82,13 +82,15 @@
     <script>
         document.addEventListener('DOMContentLoaded', () => {
             const chartData = @json($chartData);
+            if (!chartData.dates || chartData.dates.length === 0) return;
+
             const options = {
                 series: [
                     { name: 'Clicks', type: 'column', data: chartData.clicks },
                     { name: 'Impressions', type: 'line', data: chartData.impressions },
                     { name: 'Position', type: 'line', data: chartData.positions }
                 ],
-                chart: { height: 320, type: 'line', toolbar: { show: false } },
+                chart: { height: 320, type: 'line', toolbar: { show: false }, animations: { enabled: false } },
                 stroke: { width: [0, 2, 3], curve: 'smooth' },
                 xaxis: { categories: chartData.dates },
                 yaxis: [
@@ -110,7 +112,11 @@
                 ],
                 colors: ['#3b82f6', '#c084fc', '#10b981']
             };
-            new ApexCharts(document.querySelector("#page-chart"), options).render();
+            const el = document.querySelector("#page-chart");
+            if (el) {
+                el.innerHTML = '';
+                new ApexCharts(el, options).render();
+            }
         });
     </script>
 </x-app-layout>

@@ -58,7 +58,7 @@
                                                      @mousemove="x = $event.clientX; y = $event.clientY" 
                                                      @mouseenter="tooltip = '{{ addslashes($q->query) }}'; x = $event.clientX; y = $event.clientY" 
                                                      style="overflow: hidden; width: 250px;">
-                                                    <a href="{{ route('keywords.show', $q) }}" wire:navigate class="hover:underline">{{ $q->query }}</a>
+                                                    <a href="{{ route('keywords.show', $q) }}" class="hover:underline">{{ $q->query }}</a>
                                                 </div>
                                                 @if($gainer['is_new']) <span class="flex-shrink-0 text-[8px] font-bold text-blue-500 uppercase">New</span> @endif
                                             </div>
@@ -106,7 +106,7 @@
                                                  @mousemove="x = $event.clientX; y = $event.clientY" 
                                                  @mouseenter="tooltip = '{{ addslashes($q->query) }}'; x = $event.clientX; y = $event.clientY" 
                                                  style="overflow: hidden; width: 250px;">
-                                                <a href="{{ route('keywords.show', $q) }}" wire:navigate class="hover:underline">{{ $q->query }}</a>
+                                                <a href="{{ route('keywords.show', $q) }}" class="hover:underline">{{ $q->query }}</a>
                                             </div>
                                         </td>
                                         <td class="px-4 py-3 text-right text-sm font-bold text-red-600">{{ number_format($loser['imp_gain']) }}</td>
@@ -157,7 +157,7 @@
                                                  @mousemove="x = $event.clientX; y = $event.clientY" 
                                                  @mouseenter="tooltip = '{{ addslashes($p->url) }}'; x = $event.clientX; y = $event.clientY" 
                                                  style="overflow: hidden; width: 250px;">
-                                                <a href="{{ route('pages.show', $p) }}" wire:navigate class="hover:underline">{{ $p->path }}</a>
+                                                <a href="{{ route('pages.show', $p) }}" class="hover:underline">{{ $p->path }}</a>
                                             </div>
                                         </td>
                                         <td class="px-4 py-3 text-right text-sm font-bold text-green-600">+{{ number_format($gainer['imp_gain']) }}</td>
@@ -203,7 +203,7 @@
                                                  @mousemove="x = $event.clientX; y = $event.clientY" 
                                                  @mouseenter="tooltip = '{{ addslashes($p->url) }}'; x = $event.clientX; y = $event.clientY" 
                                                  style="overflow: hidden; width: 250px;">
-                                                <a href="{{ route('pages.show', $p) }}" wire:navigate class="hover:underline">{{ $p->path }}</a>
+                                                <a href="{{ route('pages.show', $p) }}" class="hover:underline">{{ $p->path }}</a>
                                             </div>
                                         </td>
                                         <td class="px-4 py-3 text-right text-sm font-bold text-red-600">{{ number_format($loser['imp_gain']) }}</td>
