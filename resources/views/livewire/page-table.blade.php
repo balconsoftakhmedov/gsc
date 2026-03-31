@@ -3,6 +3,7 @@
         <div>
             <label class="block text-sm font-medium text-gray-700">Date Range</label>
             <select wire:model.live="lookbackDays" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm">
+                <option value="3">Last 3 Days</option>
                 <option value="7">Last 7 Days</option>
                 <option value="14">Last 14 Days</option>
                 <option value="30">Last 30 Days</option>
@@ -63,16 +64,7 @@
             </thead>
             <tbody class="bg-white divide-y divide-gray-200">
                 @php
-                    $renderDelta = function($pageId, $field, $comparisonData, $latestDate) {
-                        $stats = $comparisonData->get($pageId);
-                        if (!$stats || $stats->count() < 2) return null;
-
-                        // Ensure we compare strings or Carbon objects correctly
-                        $currentDateStr = $latestDate instanceof \Carbon\Carbon ? $latestDate->format('Y-m-d') : $latestDate;
-
-                        $current = $stats->first(fn($s) => $s->stat_date->format('Y-m-d') === $currentDateStr)?->$field ?? 0;
-                        $previous = $stats->first(fn($s) => $s->stat_date->format('Y-m-d') !== $currentDateStr)?->$field ?? 0;
-
+                    $renderDelta = function($current, $previous, $field) {
                         if ($previous == 0) return $current > 0 ? '<span class="text-green-600 text-[10px] block">+100%</span>' : null;
 
                         $diff = (($current - $previous) / $previous) * 100;
@@ -81,7 +73,7 @@
                         $color = $diff > 0 ? 'text-green-600' : 'text-red-600';
                         $sign = $diff > 0 ? '+' : '';
                         
-                        if ($field === 'avg_position') {
+                        if ($field === 'mean_position') {
                             $color = $diff < 0 ? 'text-green-600' : 'text-red-600';
                         }
 
@@ -91,6 +83,7 @@
                 @forelse($pages as $page)
                     @php
                         $data = $aggregatedData->get($page->id);
+                        $prev = $comparisonData->get($page->id);
                     @endphp
                     @if($data)
                     <tr class="hover:bg-gray-50">
@@ -101,19 +94,19 @@
                         </td>
                         <td class="px-6 py-4 whitespace-nowrap text-sm text-right font-medium">
                             {{ number_format($data->sum_clicks) }}
-                            {!! $renderDelta($page->id, 'total_clicks', $comparisonData, $latestDate) !!}
+                            {!! $renderDelta($data->sum_clicks, $prev->sum_clicks ?? 0, 'sum_clicks') !!}
                         </td>
                         <td class="px-6 py-4 whitespace-nowrap text-sm text-right">
                             {{ number_format($data->sum_impressions) }}
-                            {!! $renderDelta($page->id, 'total_impressions', $comparisonData, $latestDate) !!}
+                            {!! $renderDelta($data->sum_impressions, $prev->sum_impressions ?? 0, 'sum_impressions') !!}
                         </td>
                         <td class="px-6 py-4 whitespace-nowrap text-sm text-right">
                             {{ number_format($data->mean_ctr * 100, 2) }}%
-                            {!! $renderDelta($page->id, 'avg_ctr', $comparisonData, $latestDate) !!}
+                            {!! $renderDelta($data->mean_ctr, $prev->mean_ctr ?? 0, 'mean_ctr') !!}
                         </td>
                         <td class="px-6 py-4 whitespace-nowrap text-sm text-right">
                             {{ number_format($data->mean_position, 1) }}
-                            {!! $renderDelta($page->id, 'avg_position', $comparisonData, $latestDate) !!}
+                            {!! $renderDelta($data->mean_position, $prev->mean_position ?? 0, 'mean_position') !!}
                         </td>
                     </tr>
                     @endif

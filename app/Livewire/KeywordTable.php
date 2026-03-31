@@ -91,27 +91,35 @@ class KeywordTable extends Component
 
         $keywords = $q->paginate(50);
 
-        // Fetch comparison data (Latest Day with data vs the day before)
-        $latestDate = DailyQuerySummary::where('domain_id', $this->domain->id)
-            ->where('total_impressions', '>', 0)
-            ->max('stat_date');
-            
-        $yesterdayDate = $latestDate ? Carbon::parse($latestDate)->subDay()->format('Y-m-d') : null;
+        // Fetch the latest date available in summaries for this domain
+        $latestDate = DailyQuerySummary::where('domain_id', $this->domain->id)->max('stat_date');
 
-        $comparisonData = [];
-        if ($latestDate && $yesterdayDate) {
-            $comparisonData = DailyQuerySummary::where('domain_id', $this->domain->id)
-                ->whereDate('stat_date', '>=', $yesterdayDate)
-                ->whereDate('stat_date', '<=', $latestDate)
-                ->get()
-                ->groupBy('query_id');
-        }
+        // Period-over-Period comparison logic
+        $currentEnd = $latestDate ? Carbon::parse($latestDate)->format('Y-m-d') : now()->format('Y-m-d');
+        $currentStart = Carbon::parse($currentEnd)->subDays($this->lookbackDays - 1)->format('Y-m-d');
+        
+        $prevEnd = Carbon::parse($currentStart)->subDay()->format('Y-m-d');
+        $prevStart = Carbon::parse($prevEnd)->subDays($this->lookbackDays - 1)->format('Y-m-d');
+
+        // Aggregate data for the previous period to compare
+        $comparisonData = DailyQuerySummary::where('domain_id', $this->domain->id)
+            ->whereDate('stat_date', '>=', $prevStart)
+            ->whereDate('stat_date', '<=', $prevEnd)
+            ->selectRaw('
+                query_id,
+                SUM(total_clicks) as sum_clicks,
+                SUM(total_impressions) as sum_impressions,
+                AVG(avg_ctr) as mean_ctr,
+                AVG(avg_position) as mean_position
+            ')
+            ->groupBy('query_id')
+            ->get()
+            ->keyBy('query_id');
 
         return view('livewire.keyword-table', [
             'keywords' => $keywords,
             'aggregatedData' => $aggregatedData,
             'comparisonData' => $comparisonData,
-            'latestDate' => $latestDate,
         ]);
     }
 }
