@@ -29,12 +29,16 @@ class GoogleSearchConsoleService
         $this->service = new SearchConsole($this->client);
     }
 
-    public function getDailySearchAnalytics(string $siteUrl, string $date)
+    public function getDailySearchAnalytics(string $siteUrl, string $date, string $dataState = 'all', array $dimensions = ['query', 'page', 'country'])
     {
         $request = new SearchAnalyticsQueryRequest();
         $request->setStartDate($date);
         $request->setEndDate($date);
-        $request->setDimensions(['query', 'page', 'country']);        $request->setRowLimit(25000); // Max allowed by API per request
+        if (!empty($dimensions)) {
+            $request->setDimensions($dimensions);
+        }
+        $request->setDataState($dataState);
+        $request->setRowLimit(25000); // Max allowed by API per request
 
         $startRow = 0;
         $allRows = [];

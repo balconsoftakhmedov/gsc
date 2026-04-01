@@ -10,8 +10,22 @@
             @php
                 $syncMessage = '';
                 if (request()->has('trigger_sync')) {
-                    \Illuminate\Support\Facades\Artisan::call('seo:sync-gsc');
-                    $syncMessage = 'Sync completed successfully!';
+                    $domains = \App\Models\Domain::where('is_active', true)->get();
+                    $syncAction = app(\App\Actions\SyncDomainSearchAnalyticsAction::class);
+                    
+                    foreach ($domains as $domain) {
+                        // Explicitly try Today, Yesterday, and the day before
+                        for ($i = 0; $i <= 2; $i++) {
+                            $date = now()->subDays($i)->format('Y-m-d');
+                            try {
+                                $syncAction->execute($domain, $date);
+                            } catch (\Exception $e) {
+                                // Log and continue to next date
+                                \Illuminate\Support\Facades\Log::warning("Fresh sync failed for {$date}: " . $e->getMessage());
+                            }
+                        }
+                    }
+                    $syncMessage = 'Fresh data sync attempted for the last 3 days (including today)!';
                 }
             @endphp
 

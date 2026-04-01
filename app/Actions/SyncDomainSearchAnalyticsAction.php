@@ -33,15 +33,16 @@ class SyncDomainSearchAnalyticsAction
 
         try {
             $siteUrl = $domain->gsc_property ?? $domain->site_url;
-            $rows = $this->gscService->getDailySearchAnalytics($siteUrl, $date);
+            
+            // 1. Fetch Official Totals (matches GSC web interface exactly)
+            $totalRows = $this->gscService->getDailySearchAnalytics($siteUrl, $date, 'all', []);
+            $officialTotal = $totalRows[0] ?? null;
+
+            // 2. Fetch Detailed Data (for Keywords/Pages tables)
+            $rows = $this->gscService->getDailySearchAnalytics($siteUrl, $date, 'all', ['query', 'page', 'country']);
 
             $rowsFetched = count($rows);
             $syncRun->update(['rows_fetched' => $rowsFetched]);
-
-            if ($rowsFetched === 0) {
-                $syncRun->update(['status' => 'completed', 'finished_at' => now()]);
-                return;
-            }
 
             DB::beginTransaction();
 
@@ -138,7 +139,22 @@ class SyncDomainSearchAnalyticsAction
             DB::commit();
 
             // 7. Rebuild summaries
-            $this->domainSummaryAction->execute($domain, $date);
+            if ($officialTotal) {
+                \App\Models\DailyDomainSummary::updateOrCreate(
+                    ['domain_id' => $domain->id, 'stat_date' => $date],
+                    [
+                        'total_clicks' => $officialTotal->getClicks(),
+                        'total_impressions' => $officialTotal->getImpressions(),
+                        'avg_ctr' => $officialTotal->getCtr(),
+                        'avg_position' => $officialTotal->getPosition(),
+                        'keyword_count' => \App\Models\DailySearchAnalytic::where('domain_id', $domain->id)->whereDate('stat_date', $date)->distinct('query_id')->count(),
+                        'page_count' => \App\Models\DailySearchAnalytic::where('domain_id', $domain->id)->whereDate('stat_date', $date)->distinct('page_id')->count(),
+                    ]
+                );
+            } else {
+                $this->domainSummaryAction->execute($domain, $date);
+            }
+
             $this->querySummaryAction->execute($domain, $date);
             $this->pageSummaryAction->execute($domain, $date);
             $this->countrySummaryAction->execute($domain, $date);
