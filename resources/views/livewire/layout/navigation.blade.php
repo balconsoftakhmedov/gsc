@@ -56,6 +56,10 @@ new class extends Component
                     <x-nav-link :href="route('actions.index')" :active="request()->routeIs('actions.*')">
                         {{ __('Actions') }}
                     </x-nav-link>
+
+                    <x-nav-link :href="route('sync_logs.index')" :active="request()->routeIs('sync_logs.*')">
+                        {{ __('Sync Logs') }}
+                    </x-nav-link>
                 </div>
             </div>
 

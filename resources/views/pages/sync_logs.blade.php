@@ -7,6 +7,33 @@
 
     <div class="py-12">
         <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
+            @php
+                $syncMessage = '';
+                if (request()->has('trigger_sync')) {
+                    \Illuminate\Support\Facades\Artisan::call('seo:sync-gsc');
+                    $syncMessage = 'Sync completed successfully!';
+                }
+            @endphp
+
+            <div class="bg-white p-6 rounded-lg shadow-sm border mb-6 flex flex-col md:flex-row justify-between items-center gap-4">
+                <div>
+                    <h3 class="text-lg font-bold text-gray-900">Manual Data Sync</h3>
+                    <p class="text-sm text-gray-500">Trigger a manual fetch of data from Google Search Console.</p>
+                    @if($syncMessage)
+                        <div class="mt-2 text-sm text-green-600 font-bold">{{ $syncMessage }}</div>
+                    @endif
+                </div>
+
+                <div class="flex-shrink-0">
+                    <a href="?trigger_sync=1" 
+                       class="inline-flex items-center px-4 py-2 border border-black text-xs font-bold rounded-lg shadow-sm bg-green-500 hover:bg-green-600 transition-all"
+                       style="color: black !important;">
+                        <svg class="w-3 h-3 mr-1 text-black" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path></svg>
+                        <span style="color: black !important;">SYNC DATA NOW</span>
+                    </a>
+                </div>
+            </div>
+
             <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg p-6">
                 @php
                     $syncRuns = \App\Models\SyncRun::with('domain')->orderBy('started_at', 'desc')->paginate(50);
